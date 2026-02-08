@@ -1,3 +1,4 @@
+from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -157,6 +158,69 @@ class AssessmentSubmission(BaseModel):
     subject: str
     score: int
     total_questions: int
+    answers: Dict[int, str] = {} # question_id -> selected_option
+
+class QuestionDetailResponse(BaseModel):
+    id: int
+    question: str
+    options: List[str]
+    selected_answer: str
+    correct_answer: str
+    explanation: str
+
+class AssessmentResultResponse(BaseModel):
+    id: int
+    subject: str
+    score: int
+    total_questions: int
+    accuracy: float
+    created_at: datetime
+    questions: List[QuestionDetailResponse] = []
+    
+    class Config:
+        from_attributes = True
+
+@router.get("/result/{result_id}", response_model=AssessmentResultResponse)
+def get_assessment_result(
+    result_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    result = db.query(UserResult).filter(UserResult.id == result_id, UserResult.user_id == current_user.id).first()
+    if not result:
+        raise HTTPException(status_code=404, detail="Result not found")
+    
+    # Hydrate questions
+    questions_data = []
+    if result.answers:
+        question_ids = [int(qid) for qid in result.answers.keys()]
+        if question_ids:
+            mcqs = db.query(MCQ).filter(MCQ.id.in_(question_ids)).all()
+            mcq_map = {m.id: m for m in mcqs}
+            
+            for qid_str, selected in result.answers.items():
+                qid = int(qid_str)
+                mcq = mcq_map.get(qid)
+                if mcq:
+                    questions_data.append(QuestionDetailResponse(
+                        id=mcq.id,
+                        question=mcq.question,
+                        options=[mcq.option_a, mcq.option_b, mcq.option_c, mcq.option_d],
+                        selected_answer=selected,
+                        correct_answer=mcq.correct_answer,
+                        explanation=mcq.explanation or "No explanation provided."
+                    ))
+    
+    # Construct response manually to include the hydrated questions
+    return AssessmentResultResponse(
+        id=result.id,
+        subject=result.subject,
+        score=result.score,
+        total_questions=result.total_questions,
+        accuracy=result.accuracy,
+        created_at=result.created_at,
+        questions=questions_data
+    )
 
 @router.post("/submit")
 def submit_assessment(
@@ -171,7 +235,8 @@ def submit_assessment(
         subject=submission.subject,
         score=submission.score,
         total_questions=submission.total_questions,
-        accuracy=accuracy
+        accuracy=accuracy,
+        answers=submission.answers
     )
     db.add(result)
     

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CheckCircle, XCircle, Clock, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { getApiBaseUrl } from "@/utils/config";
+import Link from "next/link";
 
 type HistoryItem = {
     id: number;
@@ -70,36 +71,37 @@ export default function AssessmentHistory() {
             </h3>
             <div className="space-y-3">
                 {history.slice(0, 5).map((item, idx) => (
-                    <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="p-4 bg-[#0F172A] rounded-xl border border-[#1E293B] hover:border-[#007BFF]/30 transition-all flex items-center justify-between group"
-                    >
-                        <div className="flex flex-col gap-1">
-                            <span className="font-medium text-white text-sm">
-                                {SUBJECT_MAP[item.subject] || item.subject}
-                            </span>
-                            <span className="text-xs text-gray-400">
-                                {new Date(item.created_at).toLocaleDateString()}
-                            </span>
-                        </div>
+                    <Link href={`/assessment/result/${item.id}`} key={item.id} className="block">
+                        <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="p-4 bg-[#0F172A] rounded-xl border border-[#1E293B] hover:border-[#007BFF]/30 transition-all flex items-center justify-between group cursor-pointer"
+                        >
+                            <div className="flex flex-col gap-1">
+                                <span className="font-medium text-white text-sm">
+                                    {SUBJECT_MAP[item.subject] || item.subject}
+                                </span>
+                                <span className="text-xs text-gray-400">
+                                    {new Date(item.created_at).toLocaleDateString()}
+                                </span>
+                            </div>
 
-                        <div className="flex items-center gap-6">
-                            <div className="text-right">
-                                <div className="text-[#007BFF] font-mono font-bold text-sm">
-                                    {item.score}/{item.total_questions}
+                            <div className="flex items-center gap-6">
+                                <div className="text-right">
+                                    <div className="text-[#007BFF] font-mono font-bold text-sm">
+                                        {item.score}/{item.total_questions}
+                                    </div>
+                                    <div className={`text-xs font-bold ${item.accuracy >= 70 ? "text-emerald-400" : item.accuracy >= 40 ? "text-amber-400" : "text-rose-400"}`}>
+                                        {Math.round(item.accuracy)}%
+                                    </div>
                                 </div>
-                                <div className={`text-xs font-bold ${item.accuracy >= 70 ? "text-emerald-400" : item.accuracy >= 40 ? "text-amber-400" : "text-rose-400"}`}>
-                                    {Math.round(item.accuracy)}%
+                                <div className="w-8 h-8 rounded-full bg-[#1E293B] flex items-center justify-center group-hover:bg-[#007BFF] transition-colors">
+                                    <ArrowRight className="w-4 h-4 text-white" />
                                 </div>
                             </div>
-                            <div className="w-8 h-8 rounded-full bg-[#1E293B] flex items-center justify-center group-hover:bg-[#007BFF] transition-colors">
-                                <ArrowRight className="w-4 h-4 text-white" />
-                            </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
+                    </Link>
                 ))}
             </div>
         </div>

@@ -50,6 +50,7 @@ export default function TestPage() {
     const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [score, setScore] = useState(0);
+    const [errorMessage, setErrorMessage] = useState("");
 
     // Prompt before unload
     useEffect(() => {
@@ -129,7 +130,7 @@ export default function TestPage() {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    handleSubmit();
+                    handleSubmit(true);
                     return 0;
                 }
                 return prev - 1;
@@ -148,10 +149,21 @@ export default function TestPage() {
         }));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (force: boolean = false) => {
         if (isSubmitted || isSubmitting) return;
 
+        // Validate that all questions are answered (unless forced by timer)
+        if (!force && Object.keys(answers).length !== questions.length) {
+            setErrorMessage(
+                `You must answer all ${questions.length} questions. You have only answered ${Object.keys(answers).length} question(s).`
+            );
+            // Clear error after 5 seconds
+            setTimeout(() => setErrorMessage(""), 5000);
+            return;
+        }
+
         setIsSubmitting(true);
+        setErrorMessage(""); // Clear any previous errors
         const calculatedScore = questions.reduce((acc, q) => {
             return acc + (answers[q.id] === q.correct_answer ? 1 : 0);
         }, 0);
@@ -165,7 +177,7 @@ export default function TestPage() {
         try {
             const token = localStorage.getItem("token");
             if (token) {
-                await fetch(`${getApiBaseUrl()}/api/v1/assessment/submit`, {
+                const response = await fetch(`${getApiBaseUrl()}/api/v1/assessment/submit`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -174,12 +186,22 @@ export default function TestPage() {
                     body: JSON.stringify({
                         subject: subject || "Unknown",
                         score: calculatedScore,
-                        total_questions: questions.length
+                        total_questions: questions.length,
+                        answers: answers
                     })
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || "Failed to submit assessment");
+                }
             }
         } catch (e) {
             console.error("Failed to submit assessment", e);
+            setErrorMessage("Error submitting assessment. Please try again.");
+            setTimeout(() => setErrorMessage(""), 5000);
+            setIsSubmitting(false);
+            return;
         }
 
         setIsSubmitted(true);
@@ -223,6 +245,19 @@ export default function TestPage() {
             <Navbar />
 
             <main className="max-w-7xl mx-auto px-6 py-8 pt-24">
+
+                {/* Error Message Banner */}
+                {errorMessage && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mb-6 p-4 bg-rose-500/10 border border-rose-500 rounded-lg flex items-center gap-3"
+                    >
+                        <AlertCircle className="w-5 h-5 text-rose-500 flex-shrink-0" />
+                        <p className="text-sm text-rose-400 font-medium">{errorMessage}</p>
+                    </motion.div>
+                )}
 
                 {/* Loading Overlay */}
                 {isSubmitting && (
@@ -391,10 +426,18 @@ export default function TestPage() {
                         {!isSubmitted && (
                             <div className="flex justify-end mt-4">
                                 <button
-                                    onClick={handleSubmit}
-                                    className="w-full md:w-auto px-8 py-4 bg-[#22C55E] hover:bg-[#16A34A] text-white font-bold rounded-xl shadow-lg hover:shadow-[#22C55E]/20 transition-all flex items-center justify-center gap-3"
+                                    onClick={() => handleSubmit(false)}
+                                    disabled={Object.keys(answers).length !== questions.length}
+                                    className={`w-full md:w-auto px-8 py-4 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-3 ${Object.keys(answers).length !== questions.length
+                                        ? "bg-[#64748B] hover:bg-[#64748B] cursor-not-allowed opacity-60"
+                                        : "bg-[#22C55E] hover:bg-[#16A34A] hover:shadow-[#22C55E]/20"
+                                        }`}
                                 >
-                                    <span>Submit Assessment</span>
+                                    <span>
+                                        {Object.keys(answers).length !== questions.length
+                                            ? `Answer all questions (${Object.keys(answers).length}/${questions.length})`
+                                            : "Submit Assessment"}
+                                    </span>
                                     <CheckCircle className="w-5 h-5" />
                                 </button>
                             </div>

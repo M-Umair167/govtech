@@ -157,7 +157,7 @@ export default function TeamSection() {
                     <TeamCard
                         name="Umair Baloch"
                         role="Data & Database Engineer"
-                        image="/team/umair.png"
+                        image="/team/umair.jpeg"
                         initials="UB"
                         description="The brain behind the data. Umair meticulously curated thousands of MCQs and engineered the database architecture to ensure every test is accurate and fast."
                         techStack={["PostgreSQL", "MongoDB", "Python", "Data Structure"]}

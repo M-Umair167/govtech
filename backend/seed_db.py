@@ -3,6 +3,7 @@ import csv
 import os
 import sys
 import logging
+import random
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
@@ -88,6 +89,7 @@ def seed_mcqs(db: Session, csv_path: str):
     }
 
     count = 0
+    batch = []
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
         
@@ -103,41 +105,35 @@ def seed_mcqs(db: Session, csv_path: str):
             
             try:
                 subject_raw = row[1].strip()
-                # Try direct match
                 subject_id = SUBJECT_MAP.get(subject_raw)
                 
-                # If no exact match, try partials or heuristics similar to the original seed logic
                 if not subject_id:
                      if "Network" in subject_raw: subject_id = "cn"
                      elif "Database" in subject_raw: subject_id = "db"
                      elif "Data Structure" in subject_raw: subject_id = "ds"
                      elif "Security" in subject_raw: subject_id = "infosec"
                      elif "Discrete" in subject_raw: subject_id = "disc"
-                     else: 
-                         # Skip if we really can't map it, or use raw if you want fallback
-                         # logger.warning(f"Could not map subject: {subject_raw}")
-                         continue 
+                     else: continue 
 
                 question = row[3].strip()
                 opt_a = row[4].strip()
                 opt_b = row[5].strip()
                 opt_c = row[6].strip()
                 opt_d = row[7].strip()
-                correct_char = row[8].lower().strip() # 'a', 'b', 'c', 'd'
+                correct_char = row[8].lower().strip()
                 explanation = row[9].strip()
                 diff_str = row[10].strip()
                 
-                difficulty = difficulty_map.get(diff_str, 1) # Default to 1 if unknown
+                difficulty = difficulty_map.get(diff_str, 1)
 
-                # Determine full correct answer text
                 if correct_char == 'a': correct_ans = opt_a
                 elif correct_char == 'b': correct_ans = opt_b
                 elif correct_char == 'c': correct_ans = opt_c
                 elif correct_char == 'd': correct_ans = opt_d
-                else: correct_ans = opt_a # Fallback
+                else: correct_ans = opt_a
 
                 mcq = MCQ(
-                    subject=subject_id, # Store the ID (e.g. 'fp') not the name
+                    subject=subject_id,
                     difficulty_level=difficulty,
                     question=question,
                     option_a=opt_a,
@@ -147,35 +143,70 @@ def seed_mcqs(db: Session, csv_path: str):
                     correct_answer=correct_ans,
                     explanation=explanation
                 )
-                db.add(mcq)
+                batch.append(mcq)
                 count += 1
+                
+                if len(batch) >= 500:
+                    db.bulk_save_objects(batch)
+                    batch = []
             except Exception as e:
                 logger.error(f"Error processing row {row}: {e}")
 
+    if batch:
+        db.bulk_save_objects(batch)
     db.commit()
     logger.info(f"Seeded {count} MCQs.")
 
 def seed_results(db: Session, user_id: int):
     logger.info("Seeding dummy results...")
-    # Add some dummy results using the correct IDs
-    r1 = UserResult(
-        user_id=user_id,
-        subject="fp", # Fundamental Programming ID
-        score=8,
-        total_questions=10,
-        accuracy=80.0
-    )
-    r2 = UserResult(
-        user_id=user_id,
-        subject="ds", # Data Structure ID
-        score=15,
-        total_questions=20,
-        accuracy=75.0
-    )
-    db.add(r1)
-    db.add(r2)
+    
+    # Fetch 5 random MCQs for FP
+    fp_mcqs = db.query(MCQ).filter(MCQ.subject == "fp").limit(5).all()
+    if fp_mcqs:
+        answers = {}
+        score = 0
+        for mcq in fp_mcqs:
+            # Randomly guess, 80% chance correct
+            if random.random() < 0.8:
+                answers[str(mcq.id)] = mcq.correct_answer
+                score += 1
+            else:
+                answers[str(mcq.id)] = "Wrong Answer"
+        
+        r1 = UserResult(
+            user_id=user_id,
+            subject="fp",
+            score=score,
+            total_questions=len(fp_mcqs),
+            accuracy=(score/len(fp_mcqs))*100,
+            answers=answers
+        )
+        db.add(r1)
+
+    # Fetch 5 random MCQs for DS
+    ds_mcqs = db.query(MCQ).filter(MCQ.subject == "ds").limit(5).all()
+    if ds_mcqs:
+        answers = {}
+        score = 0
+        for mcq in ds_mcqs:
+            if random.random() < 0.7:
+                answers[str(mcq.id)] = mcq.correct_answer
+                score += 1
+            else:
+                answers[str(mcq.id)] = "Wrong Answer"
+
+        r2 = UserResult(
+            user_id=user_id,
+            subject="ds",
+            score=score,
+            total_questions=len(ds_mcqs),
+            accuracy=(score/len(ds_mcqs))*100,
+            answers=answers
+        )
+        db.add(r2)
+
     db.commit()
-    logger.info("Dummy results added.")
+    logger.info("Dummy results added with detailed answers.")
 
 def main():
     db = SessionLocal()

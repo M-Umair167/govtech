@@ -66,14 +66,15 @@ export default function Navbar() {
         <nav className="fixed top-0 left-0 w-full z-50 bg-[#060B16]/80 backdrop-blur-md border-b border-white/10 transition-all">
             <div className="max-w-7xl mx-auto px-6 md:px-12 h-20 flex items-center justify-between">
                 {/* Logo Section */}
-                <div className="flex items-center gap-3">
-                    <div className="relative w-10 h-10">
+                {/* Logo Section */}
+                <Link href="/" className="flex items-center gap-3 group">
+                    <div className="relative w-10 h-10 transition-transform group-hover:scale-105">
                         <Image src="/logo.png" alt="GovTech Logo" width={40} height={40} className="object-contain w-auto h-10" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight text-white font-inter">
+                    <span className="text-xl font-bold tracking-tight text-white font-inter group-hover:text-gray-200 transition-colors">
                         Gov<span className="text-[#007BFF]">Tech</span>
                     </span>
-                </div>
+                </Link>
 
                 {/* Right Side: Links & Auth */}
                 <div className="flex items-center gap-8">
