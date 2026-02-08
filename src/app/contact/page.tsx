@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,30 @@ export default function ContactPage() {
     };
 
     const router = useRouter(); // Import at top
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                try {
+                    const res = await fetch(`${getApiBaseUrl()}/api/v1/profile/me`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const user = await res.json();
+                        setFormData(prev => ({
+                            ...prev,
+                            name: user.full_name || "",
+                            email: user.email || ""
+                        }));
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch user data", e);
+                }
+            }
+        };
+        fetchUserData();
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
