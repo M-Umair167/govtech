@@ -58,8 +58,7 @@ export default function Navbar() {
         localStorage.removeItem("token");
         setIsLoggedIn(false);
         setAvatarUrl(null);
-        router.push("/login"); // Or reload to clear state effectively
-        window.location.reload();
+        window.location.href = "/";
     };
 
     return (
