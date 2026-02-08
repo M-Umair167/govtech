@@ -139,14 +139,14 @@ export default function DashboardPage() {
 
                     {/* Main Chart (2 cols) */}
                     <div className="lg:col-span-2 space-y-6">
-                        <AnalyticsChart />
+                        <div className="sticky top-24">
+                            <AnalyticsChart />
+                        </div>
                     </div>
 
                     {/* Recent History (1 col) */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-24">
-                            <AssessmentHistory />
-                        </div>
+                        <AssessmentHistory />
                     </div>
 
                 </div>
