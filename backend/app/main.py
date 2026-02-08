@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.endpoints import signup, login, home
+from app.api.v1.endpoints import signup, login, home, contact
 from app.models.base import Base
 from app.db.session import engine
 # Import all models so Base.metadata knows about them
@@ -41,6 +41,7 @@ app.add_middleware(
 app.include_router(signup.router, prefix="/api/v1/auth", tags=["signup"])
 app.include_router(login.router, prefix="/api/v1/auth", tags=["login"])
 app.include_router(home.router, prefix="/api/v1/home", tags=["home"])
+app.include_router(contact.router, prefix="/api/v1", tags=["contact"])
 from app.api.v1.endpoints import profile, assessment
 app.include_router(profile.router, prefix="/api/v1/profile", tags=["profile"])
 app.include_router(assessment.router, prefix="/api/v1/assessment", tags=["assessment"])

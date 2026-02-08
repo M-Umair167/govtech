@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    
+    # Email settings
+    MAIL_USERNAME: str | None = None
+    MAIL_PASSWORD: str | None = None
 
     class Config:
         # Look for .env.local in the root directory (govtech/.env.local)

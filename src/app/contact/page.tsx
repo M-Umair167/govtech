@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { useRouter } from "next/navigation";
+import { getApiBaseUrl } from "@/utils/config";
 import { Mail, Phone, MapPin, Send, User, AtSign, FileText, Loader2, CheckCircle, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -21,19 +23,43 @@ export default function ContactPage() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const router = useRouter(); // Import at top
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+            router.push("/login"); // Redirect to login if not authenticated
+            return;
+        }
+
         setIsLoading(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+            const response = await fetch(`${getApiBaseUrl()}/api/v1/contact/send`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(formData)
+            });
 
-        setIsLoading(false);
-        setIsSent(true);
-        setFormData({ name: "", email: "", subject: "", message: "" });
-
-        // Reset success message after 5 seconds
-        setTimeout(() => setIsSent(false), 5000);
+            if (response.ok) {
+                setIsSent(true);
+                setFormData({ name: "", email: "", subject: "", message: "" });
+                setTimeout(() => setIsSent(false), 5000);
+            } else {
+                const errorData = await response.json();
+                alert(errorData.detail || "Failed to send message.");
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
+            alert("An network error occurred. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
