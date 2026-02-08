@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+:root {
+  /* Option 1: The "Modern Professional" (Light Mode) */
+  --background: #F8FAFC;
+  /* Left Panel Background: Soft "off-white" */
+  --foreground: #0F172A;
+  /* Logo Text / Primary Text: Deep Navy */
+  --card: #FFFFFF;
+  /* Right Panel Background: Pure white */
+  --card-foreground: #0F172A;
+  --popover: #FFFFFF;
+  --popover-foreground: #0F172A;
+  --primary: #0062FF;
+  /* Primary Button: Slightly bolder blue */
+  --primary-foreground: #FFFFFF;
+  --secondary: #00A3FF;
+  /* Icon Color: Electric Blue */
+  --secondary-foreground: #FFFFFF;
+  --muted: #64748B;
+  /* Subtext: Muted slate */
+  --muted-foreground: #64748B;
+  --accent: #F1F5F9;
+  --accent-foreground: #0F172A;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #E2E8F0;
+  /* Input Borders: Subtle */
+  --input: #E2E8F0;
+  --ring: #00A3FF;
+  /* Matches Icon Color */
+  --radius: 0.5rem;
+
+  /* Custom vars for specific mappings if needed */
+  --input-background: #FFFFFF;
+}
+
+.dark {
+  /* Option 2: The "GovTech Command Center" (Dark Mode) */
+  --background: #091220;
+  /* Deep Space Navy */
+  --foreground: #FFFFFF;
+  /* Logo Text: Pure white */
+  --card: #0F172A;
+  /* Dark Slate */
+  --card-foreground: #FFFFFF;
+  --popover: #0F172A;
+  --popover-foreground: #FFFFFF;
+  --primary: #007BFF;
+  /* Electric Blue */
+  --primary-foreground: #FFFFFF;
+  /* White text on blue button */
+  --secondary: #22D3EE;
+  /* Cyber Cyan for Accents */
+  --secondary-foreground: #091220;
+  --muted: #94A3B8;
+  /* Subtext: Light grey */
+  --muted-foreground: #94A3B8;
+  --accent: #1F2937;
+  --accent-foreground: #FFFFFF;
+  --destructive: #7F1D1D;
+  --destructive-foreground: #FFFFFF;
+  --border: #1E293B;
+  /* Slightly lighter for borders */
+  --input: #1E293B;
+  --ring: #22D3EE;
+  /* Cyber Cyan Glow */
+
+  --input-background: #0F172A;
+  /* Match Card Background for inputs */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
