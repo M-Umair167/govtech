@@ -1,5 +1,4 @@
 
-import csv
 import os
 import sys
 import logging
@@ -16,6 +15,7 @@ from app.models.user import User
 from app.models.profile import UserProfile
 from app.models.mcq import MCQ
 from app.models.result import UserResult
+from app.utils.seeding import seed_mcqs_from_csv
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -63,99 +63,6 @@ def seed_users(db: Session):
     db.commit()
     logger.info(f"User {test_user.email} created with ID {test_user.id}")
     return test_user
-
-def seed_mcqs(db: Session, csv_path: str):
-    logger.info(f"Seeding MCQs from {csv_path}...")
-    
-    if not os.path.exists(csv_path):
-        logger.error(f"CSV file not found: {csv_path}")
-        return
-
-    # Map CSV subject names to Frontend IDs
-    SUBJECT_MAP = {
-        "Fundamental Programming": "fp",
-        "Data Structure": "ds",
-        "Data Structures": "ds",
-        "Database System": "db",
-        "DataBase": "db",
-        "Computer Network": "cn",
-        "Software Engineering": "se",
-        "Operating System": "os",
-        "Object Oriented Programming": "oop",
-        "OOP": "oop",
-        "Discrete Structure": "disc",
-        "Information Security": "infosec",
-        "Infosec": "infosec"
-    }
-
-    count = 0
-    batch = []
-    with open(csv_path, 'r', encoding='utf-8') as f:
-        reader = csv.reader(f)
-        
-        difficulty_map = {
-            "Easy": 1,
-            "Medium": 2,
-            "Hard": 3
-        }
-
-        for row in reader:
-            if len(row) < 11:
-                continue
-            
-            try:
-                subject_raw = row[1].strip()
-                subject_id = SUBJECT_MAP.get(subject_raw)
-                
-                if not subject_id:
-                     if "Network" in subject_raw: subject_id = "cn"
-                     elif "Database" in subject_raw: subject_id = "db"
-                     elif "Data Structure" in subject_raw: subject_id = "ds"
-                     elif "Security" in subject_raw: subject_id = "infosec"
-                     elif "Discrete" in subject_raw: subject_id = "disc"
-                     else: continue 
-
-                question = row[3].strip()
-                opt_a = row[4].strip()
-                opt_b = row[5].strip()
-                opt_c = row[6].strip()
-                opt_d = row[7].strip()
-                correct_char = row[8].lower().strip()
-                explanation = row[9].strip()
-                diff_str = row[10].strip()
-                
-                difficulty = difficulty_map.get(diff_str, 1)
-
-                if correct_char == 'a': correct_ans = opt_a
-                elif correct_char == 'b': correct_ans = opt_b
-                elif correct_char == 'c': correct_ans = opt_c
-                elif correct_char == 'd': correct_ans = opt_d
-                else: correct_ans = opt_a
-
-                mcq = MCQ(
-                    subject=subject_id,
-                    difficulty_level=difficulty,
-                    question=question,
-                    option_a=opt_a,
-                    option_b=opt_b,
-                    option_c=opt_c,
-                    option_d=opt_d,
-                    correct_answer=correct_ans,
-                    explanation=explanation
-                )
-                batch.append(mcq)
-                count += 1
-                
-                if len(batch) >= 500:
-                    db.bulk_save_objects(batch)
-                    batch = []
-            except Exception as e:
-                logger.error(f"Error processing row {row}: {e}")
-
-    if batch:
-        db.bulk_save_objects(batch)
-    db.commit()
-    logger.info(f"Seeded {count} MCQs.")
 
 def seed_results(db: Session, user_id: int):
     logger.info("Seeding dummy results...")
@@ -214,8 +121,8 @@ def main():
         reset_database()
         user = seed_users(db)
         
-        csv_path = os.path.join(os.path.dirname(__file__), "mcqs_data", "questions_data.csv")
-        seed_mcqs(db, csv_path)
+        logger.info("Seeding MCQs...")
+        seed_mcqs_from_csv(db, force=False)
         
         seed_results(db, user.id)
         

@@ -1,8 +1,12 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, Index
 from app.models.base import Base
 
 class MCQ(Base):
     __tablename__ = "mcq"
+
+    __table_args__ = (
+        Index('idx_mcq_subject_difficulty', 'subject', 'difficulty_level'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     subject = Column(String(50), nullable=False, index=True)
