@@ -47,7 +47,7 @@ def get_questions(
     limit: int = Query(25, alias="count"),
     db: Session = Depends(deps.get_db)
 ):
-    query = db.query(MCQ).filter(MCQ.subject == subject)
+    query = db.query(MCQ).filter(MCQ.subject.ilike(subject))
     
     if difficulty.lower() != "mix":
         level_map = {"low": 1, "medium": 2, "hard": 3}
