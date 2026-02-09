@@ -11,7 +11,7 @@ import app.models.result
 from app.db.utils import ensure_db_exists
 
 # Create database if it doesn't exist
-ensure_db_exists()
+# ensure_db_exists()
 
 # Create tables
 Base.metadata.create_all(bind=engine)
