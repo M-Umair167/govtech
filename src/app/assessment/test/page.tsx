@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { CheckCircle, XCircle, Clock, AlertCircle, Loader2 } from "lucide-react";
@@ -32,7 +32,7 @@ const SUBJECT_MAP: Record<string, string> = {
     infosec: "Information Security"
 };
 
-export default function TestPage() {
+function TestContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
 
@@ -501,5 +501,17 @@ export default function TestPage() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function TestPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#091220] flex items-center justify-center text-white">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#007BFF]"></div>
+            </div>
+        }>
+            <TestContent />
+        </Suspense>
     );
 }

@@ -6,9 +6,9 @@ import { ArrowLeft, ShieldCheck, FileText, Scale, AlertCircle } from "lucide-rea
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
-export default function TermsPage() {
+function TermsContent() {
     const searchParams = useSearchParams();
     const [showBackButton, setShowBackButton] = useState(false);
 
@@ -110,6 +110,18 @@ export default function TermsPage() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function TermsPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#091220] flex items-center justify-center text-white">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#007BFF]"></div>
+            </div>
+        }>
+            <TermsContent />
+        </Suspense>
     );
 }
 
