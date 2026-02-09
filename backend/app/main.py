@@ -28,6 +28,7 @@ origins = [
     "http://192.168.1.10:5366",
     "http://192.168.1.10:3000",
     "https://your-app.vercel.app",
+    "https://govtech-psi.vercel.app",
     "https://1pczgwxx-5366.inc1.devtunnels.ms",
     "https://1pczgwxx-5366.inc1.devtunnels.ms/",
 ]
