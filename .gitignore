@@ -48,3 +48,6 @@ venv/
 .venv/
 .env
 .pytest_cache/
+
+# Specification Document (Local Only)
+openspec/

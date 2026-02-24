@@ -21,21 +21,14 @@ app = FastAPI(title="GovTech API")
 # Configure CORS
 origins = [
     "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:5366",
     "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-    "http://192.168.1.10:5366",
-    "http://192.168.1.10:3000",
     "https://your-app.vercel.app",
     "https://govtech-psi.vercel.app",
-    "https://1pczgwxx-5366.inc1.devtunnels.ms",
-    "https://1pczgwxx-5366.inc1.devtunnels.ms/",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins + ["https://1pczgwxx-5366.inc1.devtunnels.ms"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

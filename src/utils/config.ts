@@ -6,6 +6,6 @@ export const getApiBaseUrl = () => {
             return "http://127.0.0.1:8000";
         }
     }
-    // Otherwise (DevTunnels, production, etc.), use the environment variable
+    // Otherwise (production, etc.), use the environment variable
     return process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 };
